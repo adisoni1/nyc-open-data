@@ -21,7 +21,7 @@
 | 311 complaints / unit | 2.10 | 0.77 | — |
 | HPD 311 complaints / unit | 1.38 | 0.33 | — |
 
-\* Non-Centennial buildings reweighted to match Centennial's mix of borough and building size (unit-count buckets). Centennial's buildings are almost all in Manhattan, where complaint rates run higher.
+\* Non-Centennial buildings reweighted to match Centennial's mix of borough and building size (unit-count buckets). All 119 Centennial buildings are in Manhattan, where complaint rates run higher.
 
 **Takeaway.** The average Centennial building got about 36 complaints in the year, versus about 14 for other HPD-registered buildings (about 15 after matching on borough and size). That's roughly 2.3–2.6× as many. The gap is largest for housing-condition complaints routed to HPD: about 23 per building versus about 6.6, or about 3.5×. The median gap (20 vs 2) shows this isn't driven by a few outliers.
 

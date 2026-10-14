@@ -183,6 +183,53 @@ def matched_comparison(df):
     return (j["complaints"] * w).sum(), (j["hpd_complaints"] * w).sum()
 
 
+def by_complaint_type(df, start, end):
+    """Avg complaints per building by 311 complaint type: Centennial vs. matched vs. all other."""
+    where = f"created_date >= '{start}' AND created_date < '{end}' AND bbl IS NOT NULL"
+    raw = soql(
+        "erm2-nwe9",
+        f"311_by_bbl_type_{start}_{end}.csv",
+        **{
+            "$select": "bbl, complaint_type, count(*) AS n",
+            "$where": where,
+            "$group": "bbl, complaint_type",
+            "$order": "bbl, complaint_type",
+        },
+    )
+    raw["n"] = pd.to_numeric(raw["n"])
+    # 311 uses both "HEAT/HOT WATER" and "Heat/Hot Water"-style casing over time.
+    raw["complaint_type"] = raw["complaint_type"].str.strip().str.upper()
+
+    bins = [0, 5, 10, 20, 50, 100, 10**6]
+    b = df[["bbl", "boro", "unitsres", "centennial"]].assign(size=pd.cut(df["unitsres"], bins))
+    t = raw.merge(b, on="bbl", how="inner")
+
+    cent = b[b["centennial"]]
+    cent_avg = t[t["centennial"]].groupby("complaint_type")["n"].sum() / len(cent)
+    other_b = b[~b["centennial"]]
+    other_avg = t[~t["centennial"]].groupby("complaint_type")["n"].sum() / len(other_b)
+
+    # Matched: per-stratum mean for other buildings, weighted by Centennial's stratum mix.
+    keys = ["boro", "size"]
+    stratum_n = other_b.groupby(keys, observed=True).size().rename("bldgs")
+    mix = cent.groupby(keys, observed=True).size()
+    w = (mix / mix.sum()).rename("w")
+    s = t[~t["centennial"]].groupby(keys + ["complaint_type"], observed=True)["n"].sum().reset_index()
+    s = s.merge(stratum_n.reset_index(), on=keys).merge(w.reset_index(), on=keys)
+    s["contrib"] = s["n"] / s["bldgs"] * s["w"]
+    matched_avg = s.groupby("complaint_type")["contrib"].sum()
+
+    out = pd.DataFrame(
+        {"centennial": cent_avg, "matched_other": matched_avg, "all_other": other_avg}
+    ).fillna(0)
+    out["ratio_vs_matched"] = out["centennial"] / out["matched_other"].where(out["matched_other"] > 0)
+    out = out.sort_values("centennial", ascending=False)
+    out.round(3).to_csv("complaint_types_per_building.csv", index_label="complaint_type")
+    print("\n=== Avg complaints per building by type (top 15 for Centennial) ===")
+    print(out.head(15).round(2).to_string())
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", default="2025-10-01")
@@ -203,6 +250,7 @@ def main():
     print(f"\n311 window: {args.start} to {args.end} (exclusive)")
     summarize(df, "All HPD-registered buildings (registration valid during window)")
     matched_comparison(df)
+    by_complaint_type(df, args.start, args.end)
 
     top = df[df["centennial"]].sort_values("complaints", ascending=False)
     top[["bbl", "boro", "address", "street", "unitsres", "complaints", "hpd_complaints"]].to_csv(

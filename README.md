@@ -27,6 +27,25 @@
 
 The per-building results are in `centennial_buildings_311.csv`. The top three are 326 E 100th St (431 complaints), 1349 Amsterdam Ave (378), and 358 W 51st St (170).
 
+## By complaint type
+
+Average complaints per building, Centennial vs. non-Centennial buildings matched on borough and size. The full list is in `complaint_types_per_building.csv`.
+
+| Complaint type | Centennial | Matched other | Ratio |
+|---|---:|---:|---:|
+| Heat/hot water | 12.65 | 2.75 | 4.6× |
+| Unsanitary condition | 2.96 | 0.93 | 3.2× |
+| Residential noise | 1.86 | 1.42 | 1.3× |
+| Plumbing | 1.45 | 0.60 | 2.4× |
+| Water leak | 1.25 | 0.34 | 3.6× |
+| Paint/plaster | 1.12 | 0.49 | 2.3× |
+| Door/window | 1.03 | 0.40 | 2.6× |
+| Electric | 0.79 | 0.24 | 3.4× |
+| Rodent | 0.77 | 0.18 | 4.3× |
+| Illegal parking | 0.64 | 1.04 | 0.6× |
+
+Heat/hot water accounts for about half of the gap: 9.9 of the 20.3 extra complaints per building. Building-condition complaints run 2–5× higher at Centennial buildings. Street-level complaints (parking, street noise) are not elevated.
+
 ## Caveats
 
 - Portfolio membership comes from HPD's managing-agent field. Croman buildings that list a different agent are missed.
